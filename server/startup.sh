@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd /home/sw/game/server
+cd /home/sw/game/ShadowWorlds/server
 
-screen -S shadow_classic -d -m wineconsole server.exe
+screen -S sw_server -d -m wineconsole server.exe
