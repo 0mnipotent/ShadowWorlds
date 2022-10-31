@@ -4,8 +4,6 @@
 read -p "Enter domain: " cpanel_dom
 
 # Get details for Database
-read -p "What is the server name: " svr_name
-svr_id=${svr_name:-ShadowWorlds}
 read -p "What is the server IP: " svr_ip
 
 # Set DB Password
@@ -49,7 +47,7 @@ uapi --user=sw Mysql set_privileges_on_database user=sw database=sw_db privilege
 mysql sw_db < database_framework.sql
 
 # Update database server details
-mysql sw_db -e "INSERT INTO servers (id, server_address, pvp, port, num_maps, toplist_path, maxusers, name) VALUES ('$svr_id', '$svr_ip','1','$svr_port','99','','99','$svr_name')"
+mysql sw_db -e "INSERT INTO servers (id, server_address, pvp, port, num_maps, toplist_path, maxusers, name) VALUES ('1', '$svr_ip','1','30303','99','','99','ShadowWorlds')"
 
 # Set sql.ini config
 cd /home/sw/game/ShadowWorlds/server
