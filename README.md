@@ -2,7 +2,7 @@
 
 # Auto Install Script for cPanel CentOS7 Server
 ```
-sh $(curl -s https://raw.githubusercontent.com/0mnipotent/ShadowWorlds/main/Install_script.sh)
+sh -c $"(curl -s https://raw.githubusercontent.com/0mnipotent/ShadowWorlds/main/Install_script.sh)"
 ```
 
 
