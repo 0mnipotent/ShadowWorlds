@@ -963,7 +963,6 @@ CREATE TABLE `servers` (
 
 LOCK TABLES `servers` WRITE;
 /*!40000 ALTER TABLE `servers` DISABLE KEYS */;
-INSERT INTO `servers` VALUES (1,'127.0.0.1',0,30303,99,'',99,'ShadowWorlds');
 /*!40000 ALTER TABLE `servers` ENABLE KEYS */;
 UNLOCK TABLES;
 
