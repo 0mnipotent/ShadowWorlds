@@ -8,7 +8,6 @@ read -p "What is the server name: " svr_name
 svr_id=${svr_name:-ShadowWorlds}
 read -p "What is the server IP: " svr_ip
 
-
 # Set DB Password
 db_password=$(date | md5sum | md5sum | cut -c-12)
 
@@ -53,8 +52,7 @@ mysql sw_db < database_framework.sql
 mysql sw_db -e "INSERT INTO servers (id, server_address, pvp, port, num_maps, toplist_path, maxusers, name) VALUES ('$svr_id', '$svr_ip','1','$svr_port','99','','99','$svr_name')"
 
 # Set sql.ini config
-cd /home/sw/game/server/
+cd /home/sw/game/ShadowWorlds/server
 sed -i "s/mysqlpassword=x/mysqlpassword=$db_password/g" sql.ini
-
 
 
