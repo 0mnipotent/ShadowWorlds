@@ -47,7 +47,7 @@ uapi --user=sw Mysql create_user name=sw password=$db_password
 uapi --user=sw Mysql set_privileges_on_database user=sw database=sw_db privileges=ALL
 
 # Restore database
-mysql sw_db < database.sql
+mysql sw_db < database_framework.sql
 
 # Update database server details
 mysql sw_db -e "INSERT INTO servers (id, server_address, pvp, port, num_maps, toplist_path, maxusers, name) VALUES ('$svr_id', '$svr_ip','1','$svr_port','99','','99','$svr_name')"
