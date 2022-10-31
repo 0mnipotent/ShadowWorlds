@@ -1,26 +1,23 @@
 #!/bin/bash
 
-yum -y install https://harbottle.gitlab.io/wine32/7/i386/wine32-release.rpm
-yum -y install wine.i686
 
-mysql -e "CREATE DATABASE ShadowWorldsDatabase"
-mysql -e "CREATE USER 'ShadowWorlds'@'localhost' IDENTIFIED WITH authentication_plugin BY 'DatabasePassword';"
-mysql -e "CREATE USER 'ShadowWorlds'@'127.0.0.1' IDENTIFIED WITH authentication_plugin BY 'DatabasePassword';"
-mysql -e "GRANT PRIVILEGE ON ShadowWorldsDatabase.* TO 'ShadowWorlds'@'host';"
-mysql -e "GRANT PRIVILEGE ON ShadowWorldsDatabase.* TO 'ShadowWorlds'@'127.0.0.1';"
 
-mysql ShadowWorlds < database.sql
+# Get details for cPanel
+read -p "Enter domain: " cpanel_dom
 
-read -p "Enter server ID: " svr_id
+# Get details for Database
+read -p "Enter server ID [1]: " svr_id
+svr_id=${svr_id:-1}
 read -p "What is the server name: " svr_name
+svr_id=${svr_name:-ShadowWorlds}
 read -p "What is the server IP: " svr_ip
-read -p "What is the server Port: " svr_port
+read -p "What is the server Port [30303] : " svr_port
+svr_port=${svr_port:-30303}
 
-mysql ShadowWorlds -e "INSERT INTO servers (id, server_address, pvp, port, num_maps, toplist_path, maxusers, name) VALUES ('$svr_id', '$svr_ip','1','$svr_port','99','','99','$svr_name')"
+# Set DB Password
+db_password=$(date | md5sum | md5sum | cut -c-12)
 
-echo "Server details added.."
-
-
+# Get details for game config
 read -p "Enter RespawnTimer [30000] :" mud_res
 mud_res=${mud_res:-30000}
 read -p "Enter MonsterTimer [1000] : " mud_mon
@@ -32,26 +29,51 @@ mud_pla=${mud_play:-1000}
 read -p "Enter HitsPerDurability [1000] : " mud_dur
 mud_dur=${mud_dur:-1000}
 
+# Install cPanel
+yum remove NetworkManager* -y
+yum -y install wget screen vim
+cd /home && curl -o latest -L https://securedownloads.cpanel.net/latest && sh latest
 
-echo "; Options
-Version=32
-ID=$svr_id
-Port=$svr_port
-NumMaps=182
-DisableRus=no
-MaxUsers=99
-MaxFreeUsers=80
-PvP=yes
-PvPFull=yes
-saveinbound=no
-RespawnTimer=$mud_res
-MonsterTimer=$mud_mon
-RestoreHPAndMNTimer=$mud_hp
-PlayersAttackTimer=$mud_pla
-PoisonAndBurnTimer=5000
-PKCounterTimer=1800000
-GlobalLockTimeOut=5000
-MapLockTimeOut=6000
-PlayerLockTimeOut=7000
-MonsterLockTimeOut=8000
-HitsPerDurability=$mud_dur" > mudclient.ini
+# Install Wine
+yum -y install https://harbottle.gitlab.io/wine32/7/i386/wine32-release.rpm
+yum -y install wine.i686
+
+# Install CSF Dependencies
+yum -y install wget vim perl-libwww-perl.noarch perl-Time-HiRes
+cd /usr/src/
+wget https://download.configserver.com/csf.tgz
+tar -xzf csf.tgz
+cd csf
+sh install.sh
+systemctl stop firewalld
+systemctl disable firewalld
+sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
+sed -i 's/^TCP_IN = "/TCP_IN = "30303,/g' /etc/csf/csf.conf
+sed -i 's/^TCP_OUT = "/TCP_OUT = "30303,/g' /etc/csf/csf.conf
+sed -i 's/^UDP_IN = "/UDP_IN = "30303,/g' /etc/csf/csf.conf
+sed -i 's/^UDP_OUT = "/UDP_OUT = "30303,/g' /etc/csf/csf.conf
+systemctl start csf
+systemctl start lfd
+systemctl enable csf
+systemctl enable lfd
+
+# Create cPanel user
+whmapi1 createacct username=sw domain=$cpanel_dom
+
+# Create database with cPanel
+uapi --user=sw Mysql create_database name=sw_db
+uapi --user=sw Mysql create_user name=sw password=$db_password
+uapi --user=sw Mysql set_privileges_on_database user=sw database=sw_db privileges=ALL
+
+# Restore database
+mysql sw_db < database.sql
+
+# Update database server details
+mysql sw_db -e "INSERT INTO servers (id, server_address, pvp, port, num_maps, toplist_path, maxusers, name) VALUES ('$svr_id', '$svr_ip','1','$svr_port','99','','99','$svr_name')"
+
+# Set mudclient.ini config
+cd /home/sw/game/server/
+sed -i "s/ID=x/ID=$svr_id/g" mudclient.ini
+sed -i "s/Port=x/ID=$svr_port/g" mudclient.ini
+
+
