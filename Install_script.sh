@@ -8,6 +8,7 @@ read -p "What is the server name: " svr_name
 svr_id=${svr_name:-ShadowWorlds}
 read -p "What is the server IP: " svr_ip
 
+
 # Set DB Password
 db_password=$(date | md5sum | md5sum | cut -c-12)
 
