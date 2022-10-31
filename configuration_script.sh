@@ -1,5 +1,16 @@
 #!/bin/bash
 
+yum -y install https://harbottle.gitlab.io/wine32/7/i386/wine32-release.rpm
+yum -y install wine.i686
+
+mysql -e "CREATE DATABASE ShadowWorldsDatabase"
+mysql -e "CREATE USER 'ShadowWorlds'@'localhost' IDENTIFIED WITH authentication_plugin BY 'DatabasePassword';"
+mysql -e "CREATE USER 'ShadowWorlds'@'127.0.0.1' IDENTIFIED WITH authentication_plugin BY 'DatabasePassword';"
+mysql -e "GRANT PRIVILEGE ON ShadowWorldsDatabase.* TO 'ShadowWorlds'@'host';"
+mysql -e "GRANT PRIVILEGE ON ShadowWorldsDatabase.* TO 'ShadowWorlds'@'127.0.0.1';"
+
+mysql ShadowWorlds < database.sql
+
 read -p "Enter server ID: " svr_id
 read -p "What is the server name: " svr_name
 read -p "What is the server IP: " svr_ip
